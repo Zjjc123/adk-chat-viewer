@@ -23,6 +23,7 @@ import {
   IconFileText,
   IconChevronDown,
   IconChevronRight,
+  IconFileExport,
 } from "@tabler/icons-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -75,6 +76,7 @@ export default function ADKPage() {
   const [chatSession, setChatSession] = useState<ChatSession | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [exportLoading, setExportLoading] = useState<boolean>(false);
 
   const [expandedCalls, setExpandedCalls] = useState<ExpandedState>({});
 
@@ -360,7 +362,7 @@ export default function ADKPage() {
               <Card key={index} shadow="sm" padding="md" radius="md" withBorder>
                 <Group>
                   {isPdf ? (
-                    <IconFileText size={20} color="red" />
+                    <IconFileText size={20} color="blue" />
                   ) : (
                     <IconFile size={20} />
                   )}
@@ -516,6 +518,109 @@ export default function ADKPage() {
     "application/json": [".json"],
   };
 
+  // Function to export chat history as PDF
+  const exportToPDF = async () => {
+    if (!chatSession || messages.length === 0) return;
+
+    setExportLoading(true);
+
+    try {
+      // Create markdown content from messages
+      let markdownContent = `# Chat History - ${
+        chatSession.appName || "ADK Session"
+      }\n\n`;
+
+      messages.forEach((message, index) => {
+        const role =
+          message.role === "user"
+            ? "User"
+            : message.author && message.author !== "user"
+            ? message.author
+            : "ADK Agent";
+        const timestamp = message.timestamp
+          ? ` (${formatTimestamp(message.timestamp)})`
+          : "";
+
+        markdownContent += `## ${role}${timestamp}\n\n${message.content}\n\n`;
+
+        // Add function calls if any
+        if (message.functionCalls && message.functionCalls.length > 0) {
+          markdownContent += `### Function Calls:\n\n`;
+          message.functionCalls.forEach((call) => {
+            markdownContent += `**${call.name}**\n\n`;
+            markdownContent += `Arguments:\n\`\`\`json\n${JSON.stringify(
+              call.args,
+              null,
+              2
+            )}\n\`\`\`\n\n`;
+
+            if (call.response) {
+              markdownContent += `Response:\n\`\`\`\n${
+                typeof call.response === "object"
+                  ? call.response.result ||
+                    JSON.stringify(call.response, null, 2)
+                  : call.response
+              }\n\`\`\`\n\n`;
+            }
+          });
+        }
+
+        // Add information about attached files if any
+        if (message.inlineFiles && message.inlineFiles.length > 0) {
+          markdownContent += `### Attached Files:\n\n`;
+          message.inlineFiles.forEach((file) => {
+            markdownContent += `- ${file.displayName}\n`;
+          });
+          markdownContent += "\n";
+        }
+
+        if (index < messages.length - 1) {
+          markdownContent += "---\n\n";
+        }
+      });
+
+      // Create form data to send to server
+      const formData = new FormData();
+      formData.append("markdown", markdownContent);
+      formData.append(
+        "filename",
+        `${chatSession.appName || "adk-chat"}-${
+          new Date().toISOString().split("T")[0]
+        }.pdf`
+      );
+
+      // Send to server endpoint
+      const response = await fetch("/api/download-pdf", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server responded with ${response.status}`);
+      }
+
+      // Get blob from response
+      const blob = await response.blob();
+
+      // Create download link
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${chatSession.appName || "adk-chat"}-${
+        new Date().toISOString().split("T")[0]
+      }.pdf`;
+      link.click();
+
+      // Clean up
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Error exporting to PDF:", err);
+      setError("Failed to export chat history to PDF.");
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
   return (
     <Container size="lg" py="xl">
       <Title order={1} mb="lg">
@@ -551,13 +656,21 @@ export default function ADKPage() {
 
       {chatSession && (
         <>
-          <Button
-            mb="md"
-            variant="outline"
-            onClick={() => setChatSession(null)}
-          >
-            Upload Another File
-          </Button>
+          <Group mb="md">
+            <Button variant="outline" onClick={() => setChatSession(null)}>
+              Upload Another File
+            </Button>
+            {messages.length > 0 && (
+              <Button
+                leftSection={<IconFileExport size={16} />}
+                onClick={exportToPDF}
+                loading={exportLoading}
+                color="blue"
+              >
+                Export to PDF
+              </Button>
+            )}
+          </Group>
           {messages.length > 0 && (
             <Box>
               <Title order={2} mb="md">
