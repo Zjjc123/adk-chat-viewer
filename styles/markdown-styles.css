@@ -1,0 +1,45 @@
+/* Markdown styling for ADK viewer */
+
+/* Ensure code blocks wrap text */
+.markdown-content pre {
+  white-space: pre-wrap;       /* CSS3 */
+  word-wrap: break-word;       /* IE */
+  overflow-wrap: break-word;
+  max-width: 100%;
+}
+
+.markdown-content code {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Add a subtle background and border to code blocks for better readability */
+.markdown-content pre {
+  background-color: #f6f8fa;
+  border-radius: 4px;
+  padding: 12px;
+  margin: 8px 0;
+  border: 1px solid #e1e4e8;
+}
+
+.markdown-content code {
+  background-color: #f6f8fa;
+  border-radius: 3px;
+  padding: 0.2em 0.4em;
+  font-family: monospace;
+}
+
+/* Ensure tables don't overflow */
+.markdown-content table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+}
+
+/* General markdown content container */
+.markdown-content {
+  width: 100%;
+  overflow-wrap: break-word;
+} 
