@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect, MouseEvent } from "react";
+import { useState, useEffect } from "react";
 import { FileUploadDropzone } from "@/components/FileUploadDropzone";
-import { FileRejection } from "@mantine/dropzone";
 import {
   Box,
   Container,
@@ -244,7 +243,7 @@ export default function ADKPage() {
     }
   };
 
-  const handleReject = (fileRejections: FileRejection[]) => {
+  const handleReject = () => {
     setError("Invalid file type. Please upload a JSON file.");
   };
 

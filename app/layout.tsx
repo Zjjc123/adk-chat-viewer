@@ -1,10 +1,10 @@
-import '@mantine/core/styles.css';
-import { MantineProvider, ColorSchemeScript } from '@mantine/core';
-import type { Metadata } from 'next';
+import "@mantine/core/styles.css";
+import { MantineProvider, ColorSchemeScript } from "@mantine/core";
+import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'ADK Viewer',
-  description: 'View and analyze ADK chat sessions',
+  title: "ADK Viewer",
+  description: "View and analyze ADK chat sessions",
 };
 
 export default function RootLayout({
@@ -18,10 +18,8 @@ export default function RootLayout({
         <ColorSchemeScript />
       </head>
       <body>
-        <MantineProvider>
-          {children}
-        </MantineProvider>
+        <MantineProvider>{children}</MantineProvider>
       </body>
     </html>
   );
-} 
+}
