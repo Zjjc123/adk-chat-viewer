@@ -18,6 +18,7 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-markdown": "^9.1.0",
+    "remark-gfm": "^4.0.1",
     "typescript": "^5"
   },
   "devDependencies": {
@@ -27,4 +28,4 @@
     "eslint": "^8",
     "eslint-config-next": "15.3.3"
   }
-} 
+}
